@@ -24,7 +24,7 @@ db = client[DB_NAME]
 db["tracks_raw"].drop()
 
 # Завантажуємо дані безпосередньо з Kaggle
-df = kagglehub.load_dataset(
+df = kagglehub.dataset_load(
   KaggleDatasetAdapter.PANDAS,
   "maharshipandya/-spotify-tracks-dataset",
   "dataset.csv"

@@ -1,3 +1,73 @@
+# Аналіз даних Spotify за допомогою MongoDB
+
+Цей проєкт демонструє повний цикл роботи з NoSQL базою даних MongoDB: від автоматичного завантаження сирих даних з Kaggle та їх трансформації (Aggregation Pipeline) до написання аналітичних запитів та оптимізації бази за допомогою індексів.
+
+## Налаштування оточення та запуск
+
+**1. Клонування репозиторію та встановлення залежностей**
+Створіть віртуальне оточення та встановіть необхідні бібліотеки:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+**2. Налаштування змінних оточення**
+Створіть файл .env у кореневій папці проєкту, скопіювавши структуру та додайте ваш рядок підключення до кластера MongoDB Atlas:
+`MONGO_URI=mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/?appName=Cluster0`
+
+**3. Порядок запуску скриптів**
+Усі скрипти потрібно запускати в такому порядку:
+
+1. `python scripts/01_load_data.py1` — автоматичне завантаження CSV з Kaggle, очищення та вставка сирих даних у колекцію `tracks_raw`.
+2. `mongosh "$MONGO_URI" --file scripts/02_transform.js` — трансформація сирих даних у документоорієнтовану структуру (колекція `tracks`).
+3. `mongosh "$MONGO_URI" --file queries/part2_queries.js` — виконання базових запитів (MQL).
+4. `mongosh "$MONGO_URI" --file queries/part3_aggregations.js` — аналітика за допомогою Aggregation Pipeline.
+5. `mongosh "$MONGO_URI" --file queries/part4_indexes.js` — створення індексів та перевірка планів виконання `(explain())`.
+
+## Схема даних (Data Schema)
+
+Після виконання скрипта трансформації (`02_transform.js`), дані зберігаються у колекції tracks з оптимізованою документоорієнтованою структурою.
+
+**Основні зміни порівняно з CSV:**
+
+1. Виконавці (`artists`) розбиті з суцільного рядка на масив (Array of Strings).
+2. Усі музичні характеристики винесені у вкладений об'єкт (`audio_features`).
+3. Додано обчислювані поля: тривалість у секундах (`duration_sec`) та категорія популярності (`popularity_tier`).
+
+Приклад фінального документа у колекції tracks:
+```json
+{
+  "_id": {"$oid": "6a09ca5d36ae7773cb5bc1d3"},
+  "track_id": "5SuOikwiRyPMVoIQDJUgSV",
+  "artists": [
+    "Gen Hoshino"
+  ],
+  "album_name": "Comedy",
+  "track_name": "Comedy",
+  "popularity": 73,
+  "duration_ms": 230666,
+  "explicit": false,
+  "track_genre": "acoustic",
+  "audio_features": {
+    "danceability": 0.676,
+    "energy": 0.461,
+    "loudness": -6.746,
+    "speechiness": 0.143,
+    "acousticness": 0.0322,
+    "instrumentalness": 0.00000101,
+    "liveness": 0.358,
+    "valence": 0.715,
+    "tempo": 87.917,
+    "key": 1,
+    "mode": 0,
+    "time_signature": 4
+  },
+  "duration_sec": 230.7,
+  "popularity_tier": "high"
+}
+```
+
 ## Частина 1 — Завантаження даних та проєктування схеми
 
 ### 1. Чому аудіо-характеристики винесені в окремий об’єкт `audio_features`, а не зберігаються плоско? Коли таке вкладення вигідне, а коли створює проблеми?
