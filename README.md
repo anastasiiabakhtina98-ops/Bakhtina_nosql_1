@@ -98,7 +98,7 @@
     "indexName": "track_genre_1_popularity_-1_audio_features.danceability_1",
     "direction": "forward"
   }
-};
+}
 ```
 
 * У плані виконання замість комбінації стадій **`SORT`** та **`COLLSCAN`** (повного перебору) з'являється стадія **`IXSCAN`** (сканування індексу).
@@ -112,7 +112,8 @@
 db.tracks.find({
   track_genre: "pop",
   popularity: { $gte: 70 }
-});```
+});
+```
 
 **Ні, цей запит не є покривним.**
 Покривний запит (covered query) — це запит, який може бути виконаний виключно за допомогою даних, що зберігаються в самому індексі, без необхідності звертатися до самих документів (без стадії FETCH). Для цього повинні виконуватися дві умови:
@@ -129,5 +130,6 @@ db.tracks.find({
 db.tracks.find(
   { track_genre: "pop", popularity: { $gte: 70 } },
   { _id: 0, track_genre: 1, popularity: 1 } 
-);```
+);
+```
 
