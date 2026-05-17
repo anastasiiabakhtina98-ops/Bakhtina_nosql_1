@@ -6,6 +6,8 @@ from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 from tqdm import tqdm
 from dotenv import load_dotenv, find_dotenv
+import kagglehub
+from kagglehub import KaggleDatasetAdapter
 
 load_dotenv(find_dotenv())
 
@@ -21,8 +23,13 @@ db = client[DB_NAME]
 # Видаляємо колекцію якщо існує — для ідемпотентного повторного запуску
 db["tracks_raw"].drop()
 
-df = pd.read_csv(CSV_PATH)
-print(f"Завантажуємо{len(df)} треків...")
+# Завантажуємо дані безпосередньо з Kaggle
+df = kagglehub.load_dataset(
+  KaggleDatasetAdapter.PANDAS,
+  "maharshipandya/-spotify-tracks-dataset",
+  "dataset.csv"
+)
+print(f"Завантажено {len(df)} треків. Починаємо обробку...")
 
 # Приводимо типи
 df["explicit"] = df["explicit"].astype(bool)
